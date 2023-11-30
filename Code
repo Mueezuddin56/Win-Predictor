@@ -1,0 +1,54 @@
+import pandas as pd
+import numpy as np
+from sklearn.model_selection import train_test_split
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.metrics import accuracy_score, classification_report
+from sklearn.metrics import confusion_matrix
+import matplotlib.pyplot as plt
+import seaborn as sns
+data is in 'data.xlsx' in a sheet named 'Sheet1'
+data = pd.read_excel('/content/drive/MyDrive/Win_Predict_Data.xlsx')
+data.drop("Card-1", axis=1,inplace=True)
+data.drop("Card-2", axis=1,inplace=True)
+data.drop("Tie", axis=1,inplace=True)
+data.head()
+[4:10 AM, 11/22/2023] Muiz: # Convert 'D' to 0, 'T' to 1, and 'TIE' to 2
+data.replace({'D': 0, 'T': 1, 'TIE': 2}, inplace=True)
+
+# Features: 'Sq-1' to 'Sq-9', 'P1 - Amount', 'P2 - Amount'
+X = data[['P1 -Amount','P2 -Amount','Sq-1', 'Sq-2', 'Sq-3', 'sq-4', 'Sq-5', 'Sq-6', 'Sq-7', 'Sq-8', 'Sq-9']]
+# Target: 'Sq-10'
+y = data['Sq-10']
+data.head()
+[4:11 AM, 11/22/2023] Muiz: from imblearn.over_sampling import SMOTE
+from collections import Counter
+
+sampler = SMOTE()
+
+X, y = sampler.fit_resample(X, y)
+[4:11 AM, 11/22/2023] Muiz: # Split the data into training and testing sets
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=33, stratify=y)
+data.head()
+# Create a Random Forest regressor
+clf = RandomForestClassifier(n_estimators=50, random_state=20)
+
+# Train the classifier on the training data
+clf.fit(X_train, y_train)
+
+# Make predictions on the test data
+y_pred = clf.predict(X_test)
+# Evaluate the model
+accuracy = accuracy_score(y_test, y_pred)
+report = classification_report(y_test, y_pred)
+
+print(f'Accuracy: {accuracy}')
+print(f'Classification Report:\n{report}')
+# Create a new sample for prediction
+new_sample = pd.DataFrame([[2760,11280,1,1,0,0,0,1,0,0,1]],
+columns=['P1 -Amount', 'P2 -Amount', 'Sq-1','Sq-2','Sq-3','sq-4','Sq-5','Sq-6','Sq-7','Sq-8','Sq-9'])
+
+# Make predictions for the new sample
+prediction = clf.predict(new_sample)
+
+# Display the prediction
+print("Next Round Predict Winner:", prediction)
